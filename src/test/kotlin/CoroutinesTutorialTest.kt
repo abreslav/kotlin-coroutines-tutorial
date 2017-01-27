@@ -37,6 +37,30 @@ class CoroutinesTutorialTest {
     }
 
     @Test
+    fun thousandThreads() {
+        val c = AtomicInteger()
+
+        for (i in 1..1_000)
+            thread(start = true) {
+                c.addAndGet(i)
+            }
+
+        println(c.get())
+    }
+
+    @Test
+    fun thousandLaunches() {
+        val c = AtomicInteger()
+
+        for (i in 1..1_000)
+            launch(CommonPool) {
+                c.addAndGet(i)
+            }
+
+        println(c.get())
+    }
+
+    @Test
     fun millionThreads() {
         val c = AtomicInteger()
 
