@@ -1,6 +1,13 @@
 
 import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.nio.aRead
 import org.junit.Test
+import java.lang.StringBuilder
+import java.nio.ByteBuffer
+import java.nio.channels.AsynchronousFileChannel
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
@@ -147,4 +154,69 @@ class CoroutinesTutorialTest {
         }
     }
 
+    private fun Path?.open(vararg options: StandardOpenOption) = AsynchronousFileChannel.open(this, *options)
+
+    @Test
+    fun readFile() {
+        val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
+        val buf = ByteBuffer.allocate(64)
+
+        runBlocking {
+            var position = 0L
+
+            while (true) {
+                val count = file.aRead(buf, position)
+                if (count < 0) break
+                position += count
+                buf.flip()
+
+                print(String(buf.array(), 0, count))
+            }
+
+        }
+
+        file.close()
+    }
+
+    suspend fun AsynchronousFileChannel.aReadAll(bufferSize: Int = 1024, handleChunk: (ByteBuffer) -> Unit) {
+        val buf = ByteBuffer.allocate(bufferSize)
+        var position = 0L
+
+        while (true) {
+            val count = aRead(buf, position)
+            if (count < 0) break
+            position += count
+            buf.flip()
+
+            handleChunk(buf)
+        }
+    }
+
+    @Test
+    fun aReadAll() {
+        val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
+        runBlocking {
+            file.aReadAll(64) {
+                println(String(it.array()))
+            }
+        }
+    }
+
+    suspend fun AsynchronousFileChannel.aReadText(
+            bufferSize: Int = 1024,
+            builder: StringBuilder = StringBuilder()
+    ): CharSequence {
+        aReadAll(bufferSize) {
+            builder.append(String(it.array()))
+        }
+        return builder
+    }
+
+    @Test
+    fun aReadText() {
+        val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
+        runBlocking {
+            println(file.aReadText())
+        }
+    }
 }
