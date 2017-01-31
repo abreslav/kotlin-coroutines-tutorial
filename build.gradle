@@ -2,12 +2,16 @@ group 'com.example'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.1.0-beta-17'
+    ext.kotlin_version = '1.1.0-dev-6625'
 
     repositories {
         mavenCentral()
         maven {
+            url "http://dl.bintray.com/kotlin/kotlin-dev"
+        }
+        maven {
             url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
+
         }
     }
     dependencies {
@@ -22,14 +26,19 @@ apply plugin: 'application'
 repositories {
     mavenCentral()
     maven {
+        url "http://dl.bintray.com/kotlin/kotlin-dev"
+    }
+    maven {
         url "http://dl.bintray.com/kotlin/kotlin-eap-1.1"
-        
+
     }
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.4-beta'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.6-rc'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:0.6-rc'
+    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-nio:0.6-rc'
     testCompile 'junit:junit:4.12'
 }
 
