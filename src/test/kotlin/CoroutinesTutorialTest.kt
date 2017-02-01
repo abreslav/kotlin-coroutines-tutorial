@@ -178,7 +178,7 @@ class CoroutinesTutorialTest {
         file.close()
     }
 
-    suspend fun AsynchronousFileChannel.aReadAll(bufferSize: Int = 1024, handleChunk: (ByteBuffer) -> Unit) {
+    suspend fun AsynchronousFileChannel.aReadBytes(bufferSize: Int = 1024, handleChunk: (ByteBuffer, Int) -> Unit) {
         val buf = ByteBuffer.allocate(bufferSize)
         var position = 0L
 
@@ -188,16 +188,16 @@ class CoroutinesTutorialTest {
             position += count
             buf.flip()
 
-            handleChunk(buf)
+            handleChunk(buf, count)
         }
     }
 
     @Test
-    fun aReadAll() {
+    fun aReadBytes() {
         val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
         runBlocking {
-            file.aReadAll(64) {
-                println(String(it.array()))
+            file.aReadBytes(64) { buf, count ->
+                println(String(buf.array(), 0, count))
             }
         }
     }
@@ -206,8 +206,8 @@ class CoroutinesTutorialTest {
             bufferSize: Int = 1024,
             builder: StringBuilder = StringBuilder()
     ): CharSequence {
-        aReadAll(bufferSize) {
-            builder.append(String(it.array()))
+        aReadBytes(bufferSize) { buf, count ->
+            builder.append(String(buf.array(), 0, count))
         }
         return builder
     }
