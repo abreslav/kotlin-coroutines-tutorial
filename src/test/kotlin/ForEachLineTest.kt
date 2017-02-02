@@ -3,19 +3,52 @@ import kotlinx.coroutines.examples.forEachLine
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Assert
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.io.StringReader
 
-class ForEachLineTest {
+@RunWith(Parameterized::class)
+class ForEachLineTest(val multiplier: Int) {
+    companion object {
+        @JvmStatic
+        @Parameterized.Parameters(name = "String size multiplier = {0}")
+        fun data(): Collection<Array<Any>> {
+            return listOf(
+                    arrayOf<Any>(1),
+                    arrayOf<Any>(64),
+                    arrayOf<Any>(1024),
+                    arrayOf<Any>(4 * 1024),
+                    arrayOf<Any>(8 * 1024),
+                    arrayOf<Any>(16 * 1024)
+            )
+        }
+    }
+
     fun doTest(text: String) = runBlocking {
+        val preparedText = if (multiplier > 1) {
+            buildString {
+                for (c in text) {
+                    if (c !in "\r\n") {
+                        append("$c".repeat(multiplier))
+                    } else {
+                        append(c)
+                    }
+                }
+            }
+        } else {
+            text
+        }
+
+
         val tempFile = createTempFile("tmp")
         try {
-            tempFile.writeText(text)
+            tempFile.writeText(preparedText)
             val lines = arrayListOf<String>()
             tempFile.toPath().forEachLine {
                 lines.add(it)
             }
 
-            val expected = StringReader(text).readLines()
+            val expected = StringReader(preparedText).readLines()
             
             Assert.assertEquals(expected, lines)
         } finally {
@@ -111,5 +144,25 @@ class ForEachLineTest {
     @Test
     fun multiLineCrLf() {
         doTest("abc\ndef\r\n")
+    }
+
+    @Test
+    fun lfStart() {
+        doTest("\nabc")
+    }
+
+    @Test
+    fun crStart() {
+        doTest("\rabc")
+    }
+
+    @Test
+    fun crlfStart() {
+        doTest("\r\nabc")
+    }
+
+    @Test
+    fun lfcrStart() {
+        doTest("\n\rabc")
     }
 }
