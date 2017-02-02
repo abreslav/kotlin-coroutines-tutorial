@@ -1,11 +1,12 @@
 
+import kotlinx.coroutines.examples.forEachLine
+import kotlinx.coroutines.examples.openChannel
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.nio.aRead
 import org.junit.Test
 import java.lang.StringBuilder
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousFileChannel
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption
 import java.util.concurrent.CountDownLatch
@@ -154,11 +155,9 @@ class CoroutinesTutorialTest {
         }
     }
 
-    private fun Path?.open(vararg options: StandardOpenOption) = AsynchronousFileChannel.open(this, *options)
-
     @Test
     fun readFile() {
-        val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
+        val file = Paths.get("src/test/resources/example.txt").openChannel(StandardOpenOption.READ)
         val buf = ByteBuffer.allocate(64)
 
         runBlocking {
@@ -194,7 +193,7 @@ class CoroutinesTutorialTest {
 
     @Test
     fun aReadBytes() {
-        val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
+        val file = Paths.get("src/test/resources/example.txt").openChannel(StandardOpenOption.READ)
         runBlocking {
             file.aReadBytes(64) { buf, count ->
                 println(String(buf.array(), 0, count))
@@ -214,9 +213,19 @@ class CoroutinesTutorialTest {
 
     @Test
     fun aReadText() {
-        val file = Paths.get("src/test/resources/example.txt").open(StandardOpenOption.READ)
+        val file = Paths.get("src/test/resources/example.txt").openChannel(StandardOpenOption.READ)
         runBlocking {
             println(file.aReadText())
+        }
+    }
+
+    @Test
+    fun forEachLine() {
+        val file = Paths.get("src/test/resources/example.txt")
+        runBlocking {
+            file.forEachLine {
+                println("|$it|")
+            }
         }
     }
 }

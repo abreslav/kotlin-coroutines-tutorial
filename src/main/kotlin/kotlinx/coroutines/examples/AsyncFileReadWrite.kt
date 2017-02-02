@@ -4,8 +4,10 @@ import kotlinx.coroutines.experimental.nio.aRead
 import kotlinx.coroutines.experimental.nio.aWrite
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.CharBuffer
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.charset.Charset
+import java.nio.charset.MalformedInputException
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.nio.file.attribute.FileAttribute
@@ -81,9 +83,68 @@ public suspend fun Path.aForEachBlock(blockSize: Int, action: (buffer: ByteArray
     }
 }
 
-public fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (line: String) -> Unit): Unit {
-    // Note: close is called at forEachLine
-    // TODO: a long implementation
+public suspend fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (line: String) -> Unit): Unit {
+    val builder = StringBuilder()
+    val decoder = charset.newDecoder()
+    var chars = CharBuffer.allocate(DEFAULT_BLOCK_SIZE)
+    var totalRead = 0
+    aForEachBlock { buffer, bytesRead ->
+        chars.clear()
+        if (bytesRead > chars.length) {
+            chars = CharBuffer.allocate(bytesRead)
+        }
+        totalRead += bytesRead
+        val result = decoder.decode(ByteBuffer.wrap(buffer, 0, bytesRead), chars, false /*no information, actually*/)
+        if (result.isError) {
+            throw MalformedInputException(totalRead)
+        }
+        chars.flip()
+
+        var crFound = false
+        var feedLen = 0
+        var pos = 0
+        var lfPos = -1
+        val length = chars.length
+
+        loop@
+        while (pos < length) {
+            val c = chars[pos]
+            when (c) {
+                '\n' -> {
+                    lfPos = pos
+                    feedLen = if (crFound) 2 else 1
+                    break@loop
+                }
+                '\r' -> {
+                    if (crFound || pos == length - 1) {
+                        lfPos = pos
+                        feedLen = 1
+                        break@loop
+                    }
+                    crFound = true
+                }
+                else -> {
+                    if (crFound) {
+                        lfPos = pos - 1
+                        feedLen = 1
+                        break@loop
+                    }
+                }
+            }
+            pos++
+        }
+
+        if (lfPos > 0) {
+            builder.append(chars, 0, lfPos - feedLen + 1)
+            action(builder.toString())
+            builder.setLength(0)
+        } else {
+            builder.append(chars)
+        }
+    }
+    if (builder.isNotEmpty()) {
+        action(builder.toString())
+    }
 }
 
 public fun File.readLines(charset: Charset = Charsets.UTF_8): List<String> {
