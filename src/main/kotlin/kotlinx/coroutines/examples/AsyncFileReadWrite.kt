@@ -105,20 +105,26 @@ public suspend fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (
         val length = chars.length
 
         fun trimCrLength(pos: Int) = pos - if (pos > 0 && chars[pos - 1] == '\r') 1 else 0
+        fun substringWithBuilder(start: Int, end: Int): String {
+            builder.append(chars, start, end)
+            val substr = builder.toString()
+            builder.setLength(0)
+            return substr
+        }
 
         loop@
         while (pos < length) {
             val c = chars[pos]
             when (c) {
                 '\n' -> {
-                    action(chars.substring(start, trimCrLength(pos)))
+                    action(substringWithBuilder(start, trimCrLength(pos)))
                     start = pos + 1
 
                 }
                 '\r' -> {
                     val nextChar = if (pos + 1 < length) chars[pos + 1] else null
 
-                    action(chars.substring(start, pos))
+                    action(substringWithBuilder(start, pos))
                     if (nextChar == '\n') {
                         pos++
                     }

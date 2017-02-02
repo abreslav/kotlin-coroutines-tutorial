@@ -15,11 +15,11 @@ class ForEachLineTest(val multiplier: Int) {
         fun data(): Collection<Array<Any>> {
             return listOf(
                     arrayOf<Any>(1),
-                    arrayOf<Any>(64),
                     arrayOf<Any>(1024),
                     arrayOf<Any>(4 * 1024),
                     arrayOf<Any>(8 * 1024),
-                    arrayOf<Any>(16 * 1024)
+                    arrayOf<Any>(16 * 1024),
+                    arrayOf<Any>(239239)
             )
         }
     }
