@@ -100,46 +100,36 @@ public suspend fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (
         }
         chars.flip()
 
-        var crFound = false
-        var feedLen = 0
+        var start = 0
         var pos = 0
-        var lfPos = -1
         val length = chars.length
+
+        fun trimCrLength(pos: Int) = pos - if (pos > 0 && chars[pos - 1] == '\r') 1 else 0
 
         loop@
         while (pos < length) {
             val c = chars[pos]
             when (c) {
                 '\n' -> {
-                    lfPos = pos
-                    feedLen = if (crFound) 2 else 1
-                    break@loop
+                    action(chars.substring(start, trimCrLength(pos)))
+                    start = pos + 1
+
                 }
                 '\r' -> {
-                    if (crFound || pos == length - 1) {
-                        lfPos = pos
-                        feedLen = 1
-                        break@loop
+                    val nextChar = if (pos + 1 < length) chars[pos + 1] else null
+
+                    action(chars.substring(start, pos))
+                    if (nextChar == '\n') {
+                        pos++
                     }
-                    crFound = true
-                }
-                else -> {
-                    if (crFound) {
-                        lfPos = pos - 1
-                        feedLen = 1
-                        break@loop
-                    }
+                    start = pos + 1
                 }
             }
             pos++
         }
 
-        if (lfPos > 0) {
-            builder.append(chars, 0, lfPos - feedLen + 1)
-            action(builder.toString())
-            builder.setLength(0)
-        } else {
-            builder.append(chars)
+        if (start < length) {
+            builder.append(chars, start, trimCrLength(length))
         }
     }
     if (builder.isNotEmpty()) {
