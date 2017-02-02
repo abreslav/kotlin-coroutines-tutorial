@@ -165,4 +165,9 @@ class ForEachLineTest(val multiplier: Int) {
     fun lfcrStart() {
         doTest("\n\rabc")
     }
+
+    @Test
+    fun manyLines() {
+        doTest("abc\nabc\rabc\r\nabc\n\nabc\r\rabc\n\rabc\r\n\r\nabc\n\n\n\nabc")
+    }
 }
