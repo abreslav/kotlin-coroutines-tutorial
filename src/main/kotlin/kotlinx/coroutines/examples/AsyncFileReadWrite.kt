@@ -2,7 +2,6 @@ package kotlinx.coroutines.examples
 
 import kotlinx.coroutines.experimental.nio.aRead
 import kotlinx.coroutines.experimental.nio.aWrite
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.nio.channels.AsynchronousFileChannel
@@ -63,9 +62,9 @@ public suspend fun Path.aWriteText(text: String, charset: Charset = Charsets.UTF
 public suspend fun Path.aAppendText(text: String, charset: Charset = Charsets.UTF_8): Unit = aAppendBytes(text.toByteArray(charset))
 
 // TODO: ByteArray or ByteBuffer?
-public suspend fun Path.aForEachBlock(action: (buffer: ByteArray, bytesRead: Int) -> Unit): Unit = aForEachBlock(DEFAULT_BLOCK_SIZE, action)
+public suspend fun Path.aForEachBlock(action: suspend (buffer: ByteArray, bytesRead: Int) -> Unit): Unit = aForEachBlock(DEFAULT_BLOCK_SIZE, action)
 
-public suspend fun Path.aForEachBlock(blockSize: Int, action: (buffer: ByteArray, bytesRead: Int) -> Unit): Unit {
+public suspend fun Path.aForEachBlock(blockSize: Int, action: suspend (buffer: ByteArray, bytesRead: Int) -> Unit): Unit {
     val buf = ByteBuffer.allocate(blockSize.coerceAtLeast(MINIMUM_BLOCK_SIZE))
     openChannel(StandardOpenOption.READ).use {
         channel ->
@@ -83,11 +82,12 @@ public suspend fun Path.aForEachBlock(blockSize: Int, action: (buffer: ByteArray
     }
 }
 
-public suspend fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (line: String) -> Unit): Unit {
+public suspend fun Path.aForEachLine(charset: Charset = Charsets.UTF_8, action: suspend (line: String) -> Unit): Unit {
     val builder = StringBuilder()
     val decoder = charset.newDecoder()
     var chars = CharBuffer.allocate(DEFAULT_BLOCK_SIZE)
     var totalRead = 0
+    // TODO: leftover bytes have to be prepended to the next buffer
     aForEachBlock { buffer, bytesRead ->
         chars.clear()
         if (bytesRead > chars.length) {
@@ -112,7 +112,6 @@ public suspend fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (
             return substr
         }
 
-        loop@
         while (pos < length) {
             val c = chars[pos]
             when (c) {
@@ -143,11 +142,11 @@ public suspend fun Path.forEachLine(charset: Charset = Charsets.UTF_8, action: (
     }
 }
 
-public fun File.readLines(charset: Charset = Charsets.UTF_8): List<String> {
+public suspend fun Path.aReadLines(charset: Charset = Charsets.UTF_8): List<String> {
     val result = ArrayList<String>()
-    forEachLine(charset) { result.add(it); }
+    aForEachLine(charset) { result.add(it); }
     return result
 }
 
-public inline fun <T> File.useLines(charset: Charset = Charsets.UTF_8, block: (Sequence<String>) -> T): T =
-        bufferedReader(charset).use { block(it.lineSequence()) }
+//public fun AsynchronousFileChannel.lineSequence(): Sequence<String> = LinesSequence(this).constrainOnce()
+

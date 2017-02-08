@@ -1,5 +1,5 @@
 
-import kotlinx.coroutines.examples.forEachLine
+import kotlinx.coroutines.examples.aForEachLine
 import kotlinx.coroutines.experimental.runBlocking
 import org.junit.Assert
 import org.junit.Test
@@ -44,7 +44,7 @@ class ForEachLineTest(val multiplier: Int) {
         try {
             tempFile.writeText(preparedText)
             val lines = arrayListOf<String>()
-            tempFile.toPath().forEachLine {
+            tempFile.toPath().aForEachLine {
                 lines.add(it)
             }
 

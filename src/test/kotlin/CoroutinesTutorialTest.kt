@@ -1,5 +1,5 @@
 
-import kotlinx.coroutines.examples.forEachLine
+import kotlinx.coroutines.examples.aForEachLine
 import kotlinx.coroutines.examples.openChannel
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.nio.aRead
@@ -223,7 +223,7 @@ class CoroutinesTutorialTest {
     fun forEachLine() {
         val file = Paths.get("src/test/resources/example.txt")
         runBlocking {
-            file.forEachLine {
+            file.aForEachLine {
                 println("|$it|")
             }
         }
