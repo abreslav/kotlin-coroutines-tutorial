@@ -1,18 +1,77 @@
-# Tutorial. Introduction to Kotlin coroutines
+# Tutorial. Introduction to Kotlin coroutines on the JVM
+
+Kotlin 1.1 introduced coroutines, a new way of writing asynchronous, non-blocking code (and much more). In this tutorial we will go through some basics of using Kotlin coroutines with the help of the `kotlinx.coroutines` library, which is a collection of helpers and wrappers for existing Java libraries.  
 
 ## Setting up a project
-
 
 ### Gradle 
 
 In IntelliJ IDEA go to *File -> New > Project...*:
 
-<img src="new_gradle_project.png"/>
+<img src="new_gradle_project_jvm.png"/>
 
-Gradle, Maven, IntelliJ IDEA
+Then follow the wizard steps. You'll have a `build.gradle` file created with Kotlin configured according to [this tutorial](https://kotlinlang.org/docs/reference/using-gradle.html):
 
-* enable coroutines
-* add dependency on kotlinx.coroutines
+Since coroutines have the *experimental* status in Kotlin 1.1, by default the compiler reports a warning every time they are used. We can opt-in for the experimental feature and use it without a warning by adding this code to `build.gradle`:
+  
+```groovy
+apply plugin: 'kotlin'
+
+kotlin {
+    experimental {
+        coroutines 'enable'
+    }
+}
+```  
+
+Since we'll be using the [`kotlinx.corotuines`](https://github.com/Kotlin/kotlinx.coroutines), let's add it to our dependencies:
+
+```groovy
+dependencies {
+    ...
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0"
+}
+```
+
+That's it, we are good to go and write code under `src/main/kotlin`.
+
+### Maven
+
+In IntelliJ IDEA go to *File -> New > Project...* and check the *Create from archetype* box:
+
+<img src="new_mvn_project_jvm.png"/>
+
+Then follow the wizard steps. You'll have a `pom.xml`  file created with Kotlin configured according to [this tutorial](https://kotlinlang.org/docs/reference/using-maven.html):
+
+Since coroutines have the *experimental* status in Kotlin 1.1, by default the compiler reports a warning every time they are used. We can opt-in for the experimental feature and use it without a warning by adding this code to `pom.xml`:
+
+```xml
+<plugin>
+    <groupId>org.jetbrains.kotlin</groupId>
+    <artifactId>kotlin-maven-plugin</artifactId>
+    ...
+    <configuration> 
+        <args> 
+            <arg>-Xcoroutines=enable</arg>
+        </args>
+    </configuration>
+</plugin>
+```
+
+Since we'll be using the [`kotlinx.corotuines`](https://github.com/Kotlin/kotlinx.coroutines), let's add it to our dependencies:
+
+```xml
+<dependencies>
+    ...
+    <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlinx-coroutines-core</artifactId>
+        <version>1.0</version>
+    </dependency>
+</dependencies>
+```
+
+That's it, we are good to go and write code under `src/main/kotlin`.
 
 ## My first coroutine
 
