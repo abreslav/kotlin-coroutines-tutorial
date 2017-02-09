@@ -2,7 +2,12 @@
 
 ## Setting up a project
 
-TODO
+
+### Gradle 
+
+In IntelliJ IDEA go to *File -> New > Project...*:
+
+<img src="new_gradle_project.png"/>
 
 Gradle, Maven, IntelliJ IDEA
 
