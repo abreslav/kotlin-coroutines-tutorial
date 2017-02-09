@@ -10,7 +10,7 @@ In IntelliJ IDEA go to *File -> New > Project...*:
 
 <img src="new_gradle_project_jvm.png"/>
 
-Then follow the wizard steps. You'll have a `build.gradle` file created with Kotlin configured according to [this tutorial](https://kotlinlang.org/docs/reference/using-gradle.html):
+Then follow the wizard steps. You'll have a `build.gradle` file created with Kotlin configured according to [this tutorial](https://kotlinlang.org/docs/reference/using-gradle.html). Make sure it's configured for Kotlin 1.1 or higher.
 
 Since coroutines have the *experimental* status in Kotlin 1.1, by default the compiler reports a warning every time they are used. We can opt-in for the experimental feature and use it without a warning by adding this code to `build.gradle`:
   
@@ -41,7 +41,7 @@ In IntelliJ IDEA go to *File -> New > Project...* and check the *Create from arc
 
 <img src="new_mvn_project_jvm.png"/>
 
-Then follow the wizard steps. You'll have a `pom.xml`  file created with Kotlin configured according to [this tutorial](https://kotlinlang.org/docs/reference/using-maven.html):
+Then follow the wizard steps. You'll have a `pom.xml`  file created with Kotlin configured according to [this tutorial](https://kotlinlang.org/docs/reference/using-maven.html). Make sure it's configured for Kotlin 1.1 or higher. 
 
 Since coroutines have the *experimental* status in Kotlin 1.1, by default the compiler reports a warning every time they are used. We can opt-in for the experimental feature and use it without a warning by adding this code to `pom.xml`:
 
