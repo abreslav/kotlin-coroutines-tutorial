@@ -80,7 +80,7 @@ One can think of a coroutine as a light-weight thread. Like threads, coroutines 
 So, how do we start a coroutine? Let's use the `launch {}` function:
 
 ```kotlin
-defer(CommonPool) {
+launch(CommonPool) {
     ...
 }
 ```
@@ -164,16 +164,16 @@ Completes in less than a second for me. But prints some arbitrary number, becaus
 We could use the same means of synchronization that are applicable to threads (a `CountDownLatch` is what crosses my mind in this case), but let's take a safer and cleaner path.
 
 
-## Deferred: returning a value from a corotuine
+## Async: returning a value from a coroutine
 
-Another way of starting a coroutine is `defer {}`. It is like `launch {}`, but returns an instance of `Deferred<T>`, which has an `await()` function that return a result of the coroutine. `Deferred<T>` is a very basic [future](https://en.wikipedia.org/wiki/Futures_and_promises) (fully-fledged JDK futures are also supported, but here we'll confine ourselves to `Deferred` for now).  
+Another way of starting a coroutine is `async {}`. It is like `launch {}`, but returns an instance of `Deferred<T>`, which has an `await()` function that return a result of the coroutine. `Deferred<T>` is a very basic [future](https://en.wikipedia.org/wiki/Futures_and_promises) (fully-fledged JDK futures are also supported, but here we'll confine ourselves to `Deferred` for now).  
 
   
 Let's create a million coroutines again, keeping their `Deferred` objects. Now there's no need in the atomic counter, as we can just return the numbers to be added from our coroutines:
 
 ```kotlin
 val deferred = (1..1_000_000).map { n ->
-    defer (CommonPool) { 
+    async (CommonPool) { 
         n 
     }
 }
@@ -200,11 +200,11 @@ runBlocking {
 
 Now it prints something sensible: `1784293664`, because all coroutines complete. 
 
-Let's also make sure that our coroutines actually run in parallel. If we add a 1-second `delay()` to each of the `defer`'s, the resulting program won't run for 1'000'000 seconds (over 11,5 days):
+Let's also make sure that our coroutines actually run in parallel. If we add a 1-second `delay()` to each of the `async`'s, the resulting program won't run for 1'000'000 seconds (over 11,5 days):
 
 ```kotlin
 val deferred = (1..1_000_000).map { n ->
-    defer (CommonPool) { 
+    async (CommonPool) { 
         delay(1000)
         n 
     }
@@ -240,10 +240,10 @@ suspend fun workload(n: Int): Int {
 Now when we call `workload()` from a coroutine, the compiler knows that it may suspend and will prepare accordingly:
 
 ```kotlin
-defer (CommonPool) {
+async (CommonPool) {
     workload(n)
 }
 ```
 
-Our `workload()` function can be called from a coroutine (or another suspending function), but _can not_ be called from outside a coroutine. Naturally, `delay()` and `await()` that we used above are themselves declared as `suspend`, and this is why we had to put them inside `runBlocking {}`, `launch {}` or `defer {}`.   
+Our `workload()` function can be called from a coroutine (or another suspending function), but _can not_ be called from outside a coroutine. Naturally, `delay()` and `await()` that we used above are themselves declared as `suspend`, and this is why we had to put them inside `runBlocking {}`, `launch {}` or `async {}`.   
  
